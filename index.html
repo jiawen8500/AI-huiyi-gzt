@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO 幕僚系统 | GitHub + 万能 sk- 引擎版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .prose h2 { font-size: 1.15rem; font-weight: 700; color: #1e3a8a; margin-top: 1.25rem; margin-bottom: 0.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.3rem; }
+        .prose p { margin-bottom: 0.8rem; line-height: 1.6; color: #374151; }
+        /* 复刻 NotebookLM 气泡溯源样式 */
+        .citation { background-color: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; margin-left: 4px; cursor: help; border: 1px solid #fca5a5; box-shadow: 1px 1px 2px rgba(0,0,0,0.1);}
+        .loader { border-top-color: #3b82f6; animation: spinner 1s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col font-sans overflow-hidden">
+
+    <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center shrink-0">
+        <h1 class="text-xl font-bold tracking-wide">💼 CEO 数字幕僚 <span class="text-emerald-400 text-xs font-normal ml-2 border-l border-slate-600 pl-2">GitHub Sync + 万能标准接口</span></h1>
+        <div class="text-xs text-slate-400 flex items-center gap-2">
+            <span id="dbStatus" class="px-2 py-1 bg-slate-800 rounded-full text-amber-400">🟡 等待连接 GitHub 云端大脑...</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row p-4 gap-4 overflow-hidden">
+        
+        <section class="w-full md:w-5/12 lg:w-1/3 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden shrink-0">
+            <div class="p-5 overflow-y-auto flex-1 space-y-4">
+                
+                <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">🔑 1. 万能 API Key (sk-...)</label>
+                        <input type="password" id="apiKey" class="w-full p-2 text-sm border border-slate-300 rounded outline-none focus:border-blue-500" placeholder="sk-..." onchange="saveConfig()">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">🌐 接口地址 (Base URL)</label>
+                            <input type="text" id="apiBaseUrl" class="w-full p-2 text-xs border border-slate-300 rounded outline-none text-slate-600 focus:border-blue-500 bg-slate-100" value="/api/chat (已走Vercel后端，无需改)" disabled>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">🤖 调用模型 (Model)</label>
+                            <input type="text" id="apiModel" class="w-full p-2 text-xs border border-slate-300 rounded outline-none text-slate-600 focus:border-blue-500" value="gpt-4o-mini" onchange="saveConfig()" title="如使用DeepSeek，请填入 deepseek-chat">
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200 mt-2">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 mt-2">🔗 2. GitHub Raw 知识库直链</label>
+                        <input type="text" id="githubUrl" class="w-full p-2 text-sm border border-slate-300 rounded outline-none focus:border-blue-500 text-blue-600 mb-2" placeholder="https://raw.githubusercontent.com/..." onchange="saveConfig(); fetchGitHubData();">
+                        <button onclick="fetchGitHubData()" class="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-2 rounded transition shadow-sm">
+                            🔄 强制拉取 GitHub 云端最新大脑
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 space-y-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">📌 拟开会议主题</label>
+                        <input type="text" id="meetingTopic" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none focus:border-blue-500" value="Q3 下沉市场新产品线营销预算扯皮会">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">👥 拟定参会名单</label>
+                        <textarea id="attendees" rows="2" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none resize-none focus:border-blue-500">CEO、销售VP及8个大区经理、产品VP、财务VP</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">📝 业务背景与当前分歧</label>
+                        <textarea id="meetingBackground" rows="4" class="w-full p-2.5 text-sm border border-slate-300 rounded-lg outline-none resize-none focus:border-blue-500 leading-relaxed">华东区要求砸50万补贴买流量降价冲销量；产品端反对，认为应投研发；财务要求死守 ROI，坚决不降价。</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t border-slate-200 shrink-0 space-y-2">
+                <button onclick="runInterception()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    🛡️ 生成会议拦截蓝图 (强制带出处溯源)
+                </button>
+                <button onclick="generatePodcast()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow transition flex justify-center items-center gap-2">
+                    🎙️ 生成 NotebookLM 级双人高管播客
+                </button>
+            </div>
+        </section>
+
+        <section class="w-full md:w-7/12 lg:w-2/3 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden relative">
+            <div class="px-6 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <h2 class="font-bold text-slate-700 text-sm tracking-wider" id="outputTitle">📑 AI 决策输出大屏</h2>
+                <div id="audioControls" class="hidden flex items-center gap-3">
+                    <span class="text-xs text-indigo-600 font-bold animate-pulse">🔊 播客剧本已就绪...</span>
+                    <button onclick="playPodcast()" class="bg-indigo-100 text-indigo-700 px-3 py-1 text-xs font-bold rounded hover:bg-indigo-200 border border-indigo-300 shadow-sm">▶️ 播放音频</button>
+                    <button onclick="stopPodcast()" class="bg-slate-200 text-slate-700 px-3 py-1 text-xs font-bold rounded hover:bg-slate-300 shadow-sm">⏹ 停止</button>
+                </div>
+            </div>
+            
+            <div id="reportArea" class="p-8 overflow-y-auto flex-1 prose max-w-none text-slate-800 relative">
+                <div id="placeholder" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-3">
+                    <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <p class="font-medium text-sm">等待拉取 GitHub 知识库并启动万能引擎...</p>
+                </div>
+            </div>
+
+            <div id="loadingOverlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm hidden flex-col items-center justify-center z-10">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-slate-900 h-16 w-16 mb-4"></div>
+                <h2 class="text-slate-800 text-lg font-bold mb-1 animate-pulse" id="loadingText">引擎正在深度推演...</h2>
+                <p class="text-xs text-slate-500">动态分析 GitHub 源文件，大海捞针寻找 CEO 语录</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let cachedKnowledge = "";
+        let podcastScriptData = [];
+
+        window.onload = function() {
+            if(localStorage.getItem('skApiKey')) document.getElementById('apiKey').value = localStorage.getItem('skApiKey');
+            if(localStorage.getItem('apiBaseUrl')) document.getElementById('apiBaseUrl').value = localStorage.getItem('apiBaseUrl');
+            if(localStorage.getItem('apiModel')) document.getElementById('apiModel').value = localStorage.getItem('apiModel');
+            if(localStorage.getItem('githubUrl')) {
+                document.getElementById('githubUrl').value = localStorage.getItem('githubUrl');
+                fetchGitHubData(); 
+            }
+        }
+
+        function saveConfig() {
+            localStorage.setItem('skApiKey', document.getElementById('apiKey').value.trim());
+            localStorage.setItem('apiBaseUrl', document.getElementById('apiBaseUrl').value.trim());
+            localStorage.setItem('apiModel', document.getElementById('apiModel').value.trim());
+            localStorage.setItem('githubUrl', document.getElementById('githubUrl').value.trim());
+        }
+
+        async function fetchGitHubData() {
+            const url = document.getElementById('githubUrl').value.trim();
+            const statusBadge = document.getElementById('dbStatus');
+            if (!url) return;
+
+            statusBadge.className = "px-2 py-1 bg-blue-100 rounded-full text-blue-700 font-bold";
+            statusBadge.innerHTML = "🔄 正在同步 GitHub 云端数据...";
+
+            try {
+                // 加时间戳防止浏览器缓存，确保永远拿到最新修改的语录
+                const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime(); 
+                const response = await fetch(fetchUrl);
+                if (!response.ok) throw new Error("GitHub 链接无效");
+                
+                cachedKnowledge = await response.text();
+                statusBadge.className = "px-2 py-1 bg-emerald-100 rounded-full text-emerald-700 font-bold";
+                statusBadge.innerHTML = `🟢 GitHub 库已热更新 (${(cachedKnowledge.length / 1000).toFixed(1)}k 字符)`;
+            } catch (error) {
+                statusBadge.className = "px-2 py-1 bg-red-100 rounded-full text-red-700";
+                statusBadge.innerHTML = "🔴 GitHub 同步失败，请检查 Raw 链接";
+            }
+        }
+
+        // 核心改造：使用标准的 OpenAI (sk-) API 调用格式
+        async function callStandardAPI(systemInstruction, userContent, loadingMsg) {
+            const model = document.getElementById('apiModel').value.trim() || "gpt-4o-mini";
+
+            if (!cachedKnowledge) throw new Error("请先填入有效的 GitHub Raw 链接，并等待同步绿灯亮起！");
+            // Vercel 环境变量里保存 OPENAI_API_KEY，因此前端不再直连 OpenAI，也不需要在浏览器里暴露 Key
+            // 仍保留 UI 的 Key 输入框，方便你临时切换到其它代理方案，但本版本不会把 Key 发到 OpenAI
+
+            document.getElementById('loadingText').innerText = loadingMsg;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('audioControls').classList.add('hidden');
+
+            const payload = {
+                model: model,
+                messages: [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: userContent }
+                ],
+                temperature: 0.2
+            };
+
+            try {
+                const response = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json().catch(() => ({}));
+
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+
+                if (!response.ok) {
+                    let errMsg = data?.error?.message || data?.error || `HTTP 请求失败 (${response.status})`;
+                    if (String(errMsg).toLowerCase().includes('context') || String(errMsg).toLowerCase().includes('length')) {
+                        errMsg = "❌ 文本太长啦！超过了该模型的“上下文胃口”极限。请删减 GitHub 里的部分文本，或换用长文本模型。";
+                    }
+                    throw new Error(errMsg);
+                }
+
+                const content = data?.choices?.[0]?.message?.content;
+                if (!content) throw new Error("代理返回为空：请检查 /api/chat 是否按 OpenAI 格式返回 choices[0].message.content");
+                return content;
+            } catch (error) {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+                throw error;
+            }
+        }
+
+        async function runInterception() {
+            const topic = document.getElementById('meetingTopic').value.trim();
+            const attendees = document.getElementById('attendees').value.trim();
+            const bg = document.getElementById('meetingBackground').value.trim();
+
+            const prompt = `你是本公司 CEO 的“数字大脑/数字幕僚”。你的上下文中包含从 GitHub 云端拉取的【CEO 历史会议记录 + CEO 常用思维模型库 + 公司战略画布相关材料】。
+
+【硬性要求-溯源铁证】
+当你在“CEO 视角破题”或“会议必要性判定”中引用 CEO 的原则、底线、否决逻辑时，必须从云端源文件中原汁原味摘录一句或多句“原话铁证”，并在该段落末尾追加以下 HTML 气泡引用（class 名必须完全一致，严禁改动）：
+<span class="citation" title="云端历史原话溯源">🔗 引用 CEO 原话: "[在此填入原文]"</span>
+
+【输出格式要求】
+- 必须严格按以下结构输出（Markdown 标题+编号）
+- 第一部分必须先给结论；第二部分仅当“必须开会”时输出完整 7 问
+- 若判定为取消或降级，第二部分只输出一句：本次不需要会议蓝图。
+
+## 第一部分：CEO的“数字大脑”解答（会议拦截机制）
+1. **调用的思维模型**
+：判断解决当前问题最适用的 1-2 个理论框架是什么？（优先从 CEO 常用库中提取；若无匹配，再选通用商业框架并说明原因）
+2. **CEO 视角破题**
+：运用上述模型，结合公司战略画布/战略意图，给出针对此问题的初步解答或核心审视视角。（此处如涉及CEO底线/原则，必须带 citation 原话铁证）
+3. **会议必要性判定**
+：基于上述解答，给出明确结论（只能三选一，并用 ✅ 标记选中项，其余不选）：
+- [ ] 建议取消会议：问题已有明确解法，请直接按上述思路执行/拆解任务。  
+- [ ] 建议降级：无需高管开会，转为邮件/文档异步对齐数据。  
+- [ ] 必须开会：属于复杂决策或战略盲区，请参考下方会议蓝图。  
+（此处如判定理由涉及CEO底线/原则，必须带 citation 原话铁证）
+
+## 第二部分：AI 会议预演蓝图（仅当“必须开会”时输出）
+1. **谁必须参加？**
+（列出精准的岗位/角色，并说明他们为什么必须在场；明确剔除冗余旁听人员）
+2. **各自应做什么贡献？**
+（每个人在会上必须输出的硬性决策或观点是什么？拒绝只带耳朵来）
+3. **提前准备什么信息？**
+（参会者入场前必须阅读的数据、报告或草案清单；按人头列出来）
+4. **备选理论框架探讨**
+（除了刚才 CEO 的破题模型，还有哪些备选跨学科商业理论可供会上辩论参考？给出 2-4 个，并说明各自适用点）
+5. **成功的会议成果样例 (What Good Looks Like)**
+：如果这个会议开得极其成功，最终输出的决议长什么样？请给出一个具象化的虚拟例子（例如：形成一份包含 3 个里程碑的下沉市场 GTM 甘特图 + Owner + 时间点）
+6. **建议议程与时间分配**
+（给出精确到分钟的高效时间表，例如：10min对齐背景 -> 30min方案辩论 -> 10min拍板；杜绝流水账汇报）
+7. **CEO 的核心高杠杆贡献**
+（CEO 不需要听哪些细节？必须把时间花在哪个最致命的环节进行拔高和拍板？）`; 
+
+            const context = `【来自 GitHub 的历史源文件】：\n${cachedKnowledge}\n\n===========\n【本次拟定主题】：${topic}\n【参会名单】：${attendees}\n【业务背景与扯皮点】：${bg}`;
+
+            try {
+                document.getElementById('outputTitle').innerText = "📑 智能拦截蓝图 (带气泡溯源)";
+                const result = await callStandardAPI(prompt, context, "引擎正从 GitHub 知识库中大海捞针寻找铁证...");
+                marked.setOptions({ sanitize: false }); 
+                document.getElementById('reportArea').innerHTML = marked.parse(result);
+            } catch (e) {
+                alert("推演失败：\n" + e.message);
+            }
+        }
+
+        async function generatePodcast() {
+            const topic = document.getElementById('meetingTopic').value.trim();
+            const bg = document.getElementById('meetingBackground').value.trim();
+
+            const prompt = `你是一个商战对谈播客的编剧引擎。请根据提供的会议冲突和历史源文件，生成一段 2 分钟左右、极具硅谷商战风的【双人商业电台对谈剧本】。
+角色设定：
+- Host 1 (男，沉稳冷静，代表客观数据和 CEO 视角)
+- Host 2 (女，活泼锐利，代表前线业务挑战和提问)
+
+要求：完全用纯文本的 JSON 数组输出，不要有任何 Markdown 标记（不要出现 \`\`\`json），格式必须严格如下：
+[
+    {"host": "1", "text": "欢迎收听本期高管对齐电台。明天的战略会火药味很浓啊。"},
+    {"host": "2", "text": "没错，华东区为了冲销量，强烈要求拿50万去打价格战。"}
+]`;
+            const context = `【CEO历史逻辑】：\n${cachedKnowledge}\n\n===========\n【本次冲突】：主题[${topic}]。背景[${bg}]`;
+
+            try {
+                document.getElementById('outputTitle').innerText = "🎙️ 会前战略同频播客 (Audio Overview)";
+                const result = await callStandardAPI(prompt, context, "正在撰写双人商业播客分镜剧本...");
+                
+                const cleanJson = result.replace(/```json/gi, '').replace(/```/gi, '').trim();
+                podcastScriptData = JSON.parse(cleanJson);
+                
+                let htmlStr = `<div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                    <h3 class="text-indigo-800 font-bold mb-4 text-center border-b border-indigo-200 pb-2">🎧 点击上方【播放音频】对齐脑电波</h3>
+                    <div class="space-y-4">`;
+                
+                podcastScriptData.forEach(line => {
+                    const isHost1 = line.host === "1" || line.host === 1;
+                    htmlStr += `<div class="flex flex-col ${isHost1 ? 'items-start' : 'items-end'}">
+                        <span class="text-[10px] font-bold text-slate-400 mb-1">${isHost1 ? '👨 战略主持人 (CEO视角)' : '👩 业务评论员 (前线视角)'}</span>
+                        <div class="p-3 rounded-lg max-w-[80%] text-sm ${isHost1 ? 'bg-white border border-slate-200 text-slate-800' : 'bg-indigo-600 text-white shadow-md'}">
+                            ${line.text}
+                        </div>
+                    </div>`;
+                });
+                htmlStr += `</div></div>`;
+                
+                document.getElementById('reportArea').innerHTML = htmlStr;
+                document.getElementById('audioControls').classList.remove('hidden');
+                
+            } catch (e) {
+                alert("生成播客失败：\n" + e.message + "\n\n(提示：大模型可能没有按严格的 JSON 格式输出，请再点一次重试)");
+            }
+        }
+
+        let synth = window.speechSynthesis;
+        async function playPodcast() {
+            stopPodcast();
+            if (podcastScriptData.length === 0) return;
+            
+            let voices = synth.getVoices();
+            if(voices.length === 0) {
+                await new Promise(r => setTimeout(r, 500));
+                voices = synth.getVoices();
+            }
+            
+            let voiceMale = voices.find(v => v.lang.includes('zh') && (v.name.includes('Yaoyao') || v.name.includes('Yun') || v.name.includes('Male'))) || voices.find(v => v.lang.includes('zh'));
+            let voiceFemale = voices.find(v => v.lang.includes('zh') && (v.name.includes('Xiaoxiao') || v.name.includes('Tingting') || v.name.includes('Female'))) || voices.find(v => v.lang.includes('zh'));
+            if (!voiceFemale) voiceFemale = voiceMale;
+
+            podcastScriptData.forEach((line) => {
+                let utterThis = new SpeechSynthesisUtterance(line.text);
+                const isHost1 = line.host === "1" || line.host === 1;
+                utterThis.voice = isHost1 ? voiceMale : voiceFemale;
+                utterThis.pitch = isHost1 ? 0.9 : 1.3; 
+                utterThis.rate = 1.15; 
+                synth.speak(utterThis);
+            });
+        }
+
+        function stopPodcast() {
+            if (synth.speaking) synth.cancel();
+        }
+    </script>
+</body>
+</html>
