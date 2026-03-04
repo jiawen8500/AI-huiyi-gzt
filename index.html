@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CEO 幕僚系统 | GitHub + 万能 sk- 引擎版</title>
+    <title>AI预开会议工作台 | GitHub + 万能 sk- 引擎版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -18,7 +18,7 @@
 <body class="bg-slate-100 h-screen flex flex-col font-sans overflow-hidden">
 
     <header class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center shrink-0">
-        <h1 class="text-xl font-bold tracking-wide">💼 CEO 数字幕僚 <span class="text-emerald-400 text-xs font-normal ml-2 border-l border-slate-600 pl-2">GitHub Sync + 万能标准接口</span></h1>
+        <h1 class="text-xl font-bold tracking-wide">💼 AI预开会议工作台 <span class="text-emerald-400 text-xs font-normal ml-2 border-l border-slate-600 pl-2">GitHub Sync + 万能标准接口</span></h1>
         <div class="text-xs text-slate-400 flex items-center gap-2">
             <span id="dbStatus" class="px-2 py-1 bg-slate-800 rounded-full text-amber-400">🟡 等待连接 GitHub 云端大脑...</span>
         </div>
@@ -71,7 +71,7 @@
             
             <div class="p-4 bg-slate-50 border-t border-slate-200 shrink-0 space-y-2">
                 <button onclick="runInterception()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition flex justify-center items-center gap-2">
-                    🛡️ 生成会议拦截蓝图 (强制带出处溯源)
+                    🛡️ 生成AI会议蓝图 (强制带出处溯源)
                 </button>
                 <button onclick="generatePodcast()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow transition flex justify-center items-center gap-2">
                     🎙️ 生成 NotebookLM 级双人高管播客
@@ -230,19 +230,19 @@
 （此处如判定理由涉及CEO底线/原则，必须带 citation 原话铁证）
 
 ## 第二部分：AI 会议预演蓝图（仅当“必须开会”时输出）
-1. **谁必须参加？**
+1. **1️⃣谁必须参加？**
 （列出精准的岗位/角色，并说明他们为什么必须在场；明确剔除冗余旁听人员）
-2. **各自应做什么贡献？**
+2. **2️⃣各自应做什么贡献？**
 （每个人在会上必须输出的硬性决策或观点是什么？拒绝只带耳朵来）
-3. **提前准备什么信息？**
+3. **3️⃣提前准备什么信息？**
 （参会者入场前必须阅读的数据、报告或草案清单；按人头列出来）
-4. **备选理论框架探讨**
+4. **4️⃣备选理论框架探讨**
 （除了刚才 CEO 的破题模型，还有哪些备选跨学科商业理论可供会上辩论参考？给出 2-4 个，并说明各自适用点）
-5. **成功的会议成果样例 (What Good Looks Like)**
-：如果这个会议开得极其成功，最终输出的决议长什么样？请给出一个具象化的虚拟例子（例如：形成一份包含 3 个里程碑的下沉市场 GTM 甘特图 + Owner + 时间点）
-6. **建议议程与时间分配**
+5. **5️⃣成功的会议成果样例 (What Good Looks Like)**
+（如果这个会议开得极其成功，最终输出的决议长什么样？请给出一个具象化的虚拟例子（例如：形成一份包含 3 个里程碑的下沉市场 GTM 甘特图 + Owner + 时间点）
+6. **6️⃣建议议程与时间分配**
 （给出精确到分钟的高效时间表，例如：10min对齐背景 -> 30min方案辩论 -> 10min拍板；杜绝流水账汇报）
-7. **CEO 的核心高杠杆贡献**
+7. **7️⃣CEO 的核心高杠杆贡献**
 （CEO 不需要听哪些细节？必须把时间花在哪个最致命的环节进行拔高和拍板？）`; 
 
             const context = `【来自 GitHub 的历史源文件】：\n${cachedKnowledge}\n\n===========\n【本次拟定主题】：${topic}\n【参会名单】：${attendees}\n【业务背景与扯皮点】：${bg}`;
