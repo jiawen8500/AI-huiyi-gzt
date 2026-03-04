@@ -248,7 +248,7 @@
             const context = `【来自 GitHub 的历史源文件】：\n${cachedKnowledge}\n\n===========\n【本次拟定主题】：${topic}\n【参会名单】：${attendees}\n【业务背景与扯皮点】：${bg}`;
 
             try {
-                document.getElementById('outputTitle').innerText = "📑 智能拦截蓝图 (带气泡溯源)";
+                document.getElementById('outputTitle').innerText = "📑 智能AI会议蓝图 (带气泡溯源)";
                 const result = await callStandardAPI(prompt, context, "引擎正从 GitHub 知识库中大海捞针寻找铁证...");
                 marked.setOptions({ sanitize: false }); 
                 document.getElementById('reportArea').innerHTML = marked.parse(result);
